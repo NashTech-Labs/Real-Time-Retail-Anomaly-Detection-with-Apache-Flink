@@ -33,7 +33,7 @@ This solution uses **real-time stream processing with Flink** to:
 3. **Kubernetes + Tilt** – Local development and deployment.
 4. **Grafana + influxDb** – Monitoring, metrics, and visualization.
 
-![img_5.png](img_5.png)📌 *\[Insert Architecture Diagram Placeholder]*
+![img_5.png](img_5.png)
 
 ---
 
@@ -110,7 +110,7 @@ kubectl port-forward flink-jobmanager-55f8b4ff88-ntn4v 8081:8081
 ```
 ![img_2.png](img_2.png)
 
-### 3. See Kafka brokers and topics
+### 4. See Kafka brokers and topics
 ```
 kubectl get pods
 ```
