@@ -6,12 +6,6 @@ Retail businesses continuously generate **point-of-sale (POS) transactions, staf
 
 This project demonstrates how to build a **real-time anomaly detection pipeline** using **Apache Flink**, integrated with **Kafka, Kubernetes, Tilt, and Grafana** for local development, deployment, and monitoring.
 
----
-
-## 🚀 Problem Statement
-
-Traditional retail monitoring systems rely on **batch analytics**, where anomalies are detected hours or even days after they happen. This delay leads to **financial loss, undetected fraud, and missed prevention opportunities**.
-
 This solution uses **real-time stream processing with Flink** to:
 
 * Enrich POS transactions with staff shift details.
@@ -19,7 +13,6 @@ This solution uses **real-time stream processing with Flink** to:
 * Correlate suspicious sales with security gate events.
 * Monitor inventory shrinkage anomalies.
 * Push alerts to Kafka for downstream systems and visualization.
-
 ---
 
 ## 🏗️ System Architecture
