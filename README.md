@@ -130,7 +130,8 @@ Fraudulent refund behavior is detected based on unusual patterns of refunds comp
 
 Examples:
 
-```A cashier issues 6 refunds within 10 minutes, each above $100.
+```
+A cashier issues 6 refunds within 10 minutes, each above $100.
 → Refund Burst Alert is raised with a 100% risk score.
 
 A refund transaction arrives without a matching sale in the system.
@@ -146,7 +147,8 @@ Checks whether the number of items sold exceeds the physical inventory count, in
 
 Examples:
 
-```Inventory count for SKU=12345 is 20 items, but sales data shows 30 items sold since last count.
+```
+Inventory count for SKU=12345 is 20 items, but sales data shows 30 items sold since last count.
 → Shrinkage Alert is raised with diff = 10 items.
 
 Threshold = 5; so diff=10 → risk score = 100%.
@@ -158,7 +160,8 @@ Correlates POS sales with security gate sensor triggers to identify suspicious m
 
 Examples:
 
-```A customer buys a $500 TV (high-value sale).
+```
+A customer buys a $500 TV (high-value sale).
 
 Within 2 minutes, the exit gate sensor for Gate-7 triggers unexpectedly.
 → Security Correlation Alert is raised linking saleTxn=TX123 with Gate-7.
