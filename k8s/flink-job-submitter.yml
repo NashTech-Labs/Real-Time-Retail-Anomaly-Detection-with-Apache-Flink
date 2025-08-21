@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flink-job-submitter
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: submit
+          image: anomalies-detection:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              /opt/flink/bin/flink run
+              -m flink-jobmanager:8081
+              -c com.nashtech.demo.flink.AppMain
+              /opt/flink/usrlib/retail-loss-prevention-1.0-SNAPSHOT.jar

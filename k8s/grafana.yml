@@ -1,0 +1,382 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: grafana }
+  template:
+    metadata:
+      labels: { app: grafana }
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.4.2
+          ports: [{ containerPort: 3000 }]
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: admin123
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+            - name: dashboards-provisioning
+              mountPath: /etc/grafana/provisioning/dashboards
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards
+          configMap:
+            name: grafana-dashboard
+        - name: dashboards-provisioning
+          configMap:
+            name: grafana-provisioning
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  type: NodePort
+  selector: { app: grafana }
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: InfluxDB
+        type: influxdb
+        access: proxy
+        url: http://influxdb.default.svc.cluster.local:8086
+        database: alerts
+        user: admin
+        secureJsonData:
+          password: admin123
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard
+data:
+  anomalies.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 2,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "id": 2,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT count(\"alertId\") FROM \"anomaly-alerts\" WHERE (\"type\" = 'REFUND_PATTERN') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "table"
+            }
+          ],
+          "title": "Total Refund Anomalies",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "color-text" },
+                "filterable": true,
+                "inspect": true
+              },
+              "fieldMinMax": true,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "id": 1,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+            "frameIndex": 1,
+            "showHeader": true
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT \"message\", \"employId\", \"riskScore\", \"storeId\" FROM \"anomaly-alerts\" WHERE (\"type\" = 'REFUND_PATTERN') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "table"
+            }
+          ],
+          "title": "Refund Anomalies",
+          "type": "table"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "id": 4,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto",
+            "text": { "titleSize": 1 }
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT count(\"alertId\") FROM \"anomaly-alerts\" WHERE (\"type\" = 'SHRINKAGE') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "table"
+            }
+          ],
+          "title": "Total Shrinkage anomalies",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "color-text" },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "id": 3,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+            "showHeader": true
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT \"message\", \"employId\", \"riskScore\", \"storeId\" FROM \"anomaly-alerts\" WHERE (\"type\" = 'SHRINKAGE') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "table"
+            }
+          ],
+          "title": "Shrinkage Anomalies",
+          "type": "table"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "id": 5,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT count(\"alertId\") FROM \"anomaly-alerts\" WHERE (\"type\" = 'SECURITY_CORRELATION') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Total Security Correlation Anomalies",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "color-text" },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 80 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "id": 6,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+            "showHeader": true
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "P951FEA4DE68E13C5" },
+              "query": "SELECT \"message\", \"employId\", \"riskScore\", \"storeId\" FROM \"anomaly-alerts\" WHERE (\"type\" = 'SECURITY_CORRELATION') AND $timeFilter",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "table"
+            }
+          ],
+          "title": "Security Anomalies",
+          "type": "table"
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": [],
+      "templating": { "list": [] },
+      "time": { "from": "now-6h", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Anomalies",
+      "uid": "cev6wdo4wz474b",
+      "version": 15,
+      "weekStart": ""
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        updateIntervalSeconds: 30
+        options:
+          path: /var/lib/grafana/dashboards

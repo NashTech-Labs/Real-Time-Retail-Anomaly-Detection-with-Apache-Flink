@@ -1,0 +1,20 @@
+kafka:
+  bootstrap: "kafka-0.kafka-service.default.svc.cluster.local:9092"
+  topics:
+    pos: "pos-events"
+    staff: "staff-shifts"
+    security: "security-events"
+    inventory: "inventory-counts"
+    alertsTopic: "anomaly-alerts"
+  groupId: "loss-prevention-group"
+
+thresholds:
+  refund:
+    amount: 100.0
+    count: 3
+    windowMs: 600000
+  saleTtlMs: 86400000 # 24 hours
+  gateCorrelation:
+    windowMs: 300000
+    amount: 200.0
+  inventoryShrinkageThreshold: 5
